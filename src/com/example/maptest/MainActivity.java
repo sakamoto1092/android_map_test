@@ -23,6 +23,8 @@ import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -33,7 +35,37 @@ public class MainActivity extends FragmentActivity {
 
 	/** マーカー. */
 	private Marker mMarker;
-
+	Boolean f_select_map_kind = false;
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// TODO 自動生成されたメソッド・スタブ
+		menu.add(0,R.id.action_settings,0,R.string.action_settings);
+		menu.add(0,R.id.action_settings2,0,R.string.action_settings2);
+		return super.onCreateOptionsMenu(menu);
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// TODO 自動生成されたメソッド・スタブ
+		switch(item.getItemId()){
+		case R.id.action_settings:
+			Log.d("Menu", "item1 selected");
+			f_select_map_kind = true;
+			break;
+		case R.id.action_settings2 :
+			Log.d("Menu", "item2 selected");
+			f_select_map_kind = false;
+			break;
+		}
+		
+		// ピン情報を削除
+		mMap.clear();
+		// ピンの再配置
+		setUpMap();
+		
+		return super.onOptionsItemSelected(item);
+	}
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -71,12 +103,20 @@ public class MainActivity extends FragmentActivity {
 		 * "com.google.android.maps.MapsActivity");
 		 * intent.setData(Uri.parse(url)); startActivity(intent);
 		 */
-		BufferedReader br = null;
-		InputStream is = null;
-		StringBuffer sb = new StringBuffer();
+		
+		// textview にtest.txtの内容を格納して表示
+		BufferedReader br = null;				// 読み出しバッファ
+		InputStream is = null;					// ファイル入力のストリーム
+		StringBuffer sb = new StringBuffer(); // 読み出しバッファから取り出したデータの格納用バッファ
+		
+		// ファイルのオープンクローズ,および読み出しは例外を投げるので
+		// tryのブロック内に記述しキャッチしてあげないとダメ
 		try {
 			try {
-				is = getAssets().open("test.txt");
+				if(f_select_map_kind)
+					is = getAssets().open("test1.txt");
+				else
+					is = getAssets().open("test2.txt");
 				br = new BufferedReader(new InputStreamReader(is));
 				String str;
 				while ((str = br.readLine()) != null) {
@@ -90,7 +130,10 @@ public class MainActivity extends FragmentActivity {
 		} catch (IOException io) {
 
 		}
+		
+		// text view のレイアウトを読み込み
 		TextView label = (TextView) this.findViewById(R.id.txt);
+		// viewにテキストを設定
 		label.setText(sb.toString());
 	}
 
@@ -156,25 +199,34 @@ public class MainActivity extends FragmentActivity {
 		/*ファイルからマーカの情報を読みだして設定*/
 		BufferedReader br = null;	// inputstreamから読みだしに使うバッファ
 		InputStream is = null;		// ファイル読み出し用のストリーム
-		//StringBuffer sb = new StringBuffer(); // 読みだしたデータを格納するバッファ
+		StringBuffer sb = new StringBuffer(); // 読みだしたデータを格納するバッファ
 		BitmapDescriptor icon = BitmapDescriptorFactory
 				.fromResource(R.drawable.ic_logo);    // アイコン画像の宣言
 		//options.icon(icon);							   // アイコン画像をマーカに設定
 		try {
 			try {
-				is = getAssets().open("test.txt");
+				if(f_select_map_kind)
+					is = getAssets().open("test1.txt");
+				else
+					is = getAssets().open("test2.txt");
 				br = new BufferedReader(new InputStreamReader(is));
 				String str;
 				while ((str = br.readLine()) != null) {
+					sb.append(str + "\n");
 					// 取り出した行ごとに処理
-					String[] data = str.split(",",4);
-					
-					options.title(data[0]);
-					options.position(new LatLng(Float.valueOf(data[1]),Float.valueOf(data[2])));
-					options.snippet(data[3]);
+					String[] data = str.split(" |　",4);
+					if(f_select_map_kind){
+						options.title(data[1]);
+						options.position(new LatLng(Float.valueOf(data[5]),Float.valueOf(data[6])));
+						options.snippet(data[2]+data[4]);
+					}else{
+						options.title(data[1]);
+						options.position(new LatLng(Float.valueOf(data[4]),Float.valueOf(data[5])));
+						options.snippet(data[2]);
+					}
 					mMarker = mMap.addMarker(options);
 					// 単純に保存用バッファに格納
-					//sb.append(str + "\n");
+					
 				}
 			} finally {
 				if (br != null)
@@ -184,6 +236,10 @@ public class MainActivity extends FragmentActivity {
 		} catch (IOException io) {
 
 		}
+		// text view のレイアウトを読み込み
+		TextView label = (TextView) this.findViewById(R.id.txt);
+		// viewにテキストを設定
+		label.setText(sb.toString());
 		
 		// マーカの表示をカスタマイズ
 		//mMap.setInfoWindowAdapter(new CustomInfoAdapter());

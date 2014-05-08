@@ -3,6 +3,7 @@
 
     <string name="app_name">maptest</string>
     <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_settings">Setting1</string>
+    <string name="action_settings2">Setting2</string>
 
 </resources>
