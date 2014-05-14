@@ -5,5 +5,8 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Setting1</string>
     <string name="action_settings2">Setting2</string>
+    <string name="action_settings3">show route</string>
+    <string name="action_settings4">sub activity</string>
+    <string name="title_activity_sub">SubActivity</string>
 
 </resources>

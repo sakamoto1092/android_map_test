@@ -4,6 +4,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import org.json.JSONObject;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -15,12 +22,15 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import android.support.v4.app.*;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -28,6 +38,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 
 public class MainActivity extends FragmentActivity {
 	/** GoogleMap インスタンス. */
@@ -36,46 +48,276 @@ public class MainActivity extends FragmentActivity {
 	/** マーカー. */
 	private Marker mMarker;
 	Boolean f_select_map_kind = false;
+	ProgressDialog pd;
+
+	/*for ParseJsonpOfDirectionAPI*/
+    public static String posinfo = "";
+    public static String info_A = "";
+    public static String info_B = "";
+    public ArrayList<LatLng> markerPoints;
+    
+    public static MarkerOptions options;
+    
+    public ProgressDialog progressDialog;
+    
+    public String travelMode = "driving";//default
+    
+    /* for routeSearch*/
+    private void routeSearch(){
+    	Log.d("MainActivity", "routeSearch");
+        progressDialog.show();
+        Log.d("MainActivity", "routeSearch");
+        LatLng origin = markerPoints.get(0);
+        LatLng dest = markerPoints.get(1);
+        Log.d("MainActivity", "routeSearch");
+        
+        String url = getDirectionsUrl(origin, dest);
+        Log.d("MainActivity", "routeSearch");
+        DownloadTask downloadTask = new DownloadTask();
+        Log.d("MainActivity", "routeSearch");
+        
+        downloadTask.execute(url);
+        Log.d("MainActivity", "routeSearch");
+    }
+
+    private String getDirectionsUrl(LatLng origin,LatLng dest){
+
+        
+        String str_origin = "origin="+origin.latitude+","+origin.longitude;
+
+        
+        String str_dest = "destination="+dest.latitude+","+dest.longitude;
+
+        
+        String sensor = "sensor=false";
+
+        //パラメータ
+        String parameters = str_origin+"&"+str_dest+"&"+sensor + "&language=ja" + "&mode=" + travelMode;
+
+        //JSON指定
+        String output = "json";
+
+        
+        String url = "https://maps.googleapis.com/maps/api/directions/"+output+"?"+parameters;
+
+        return url;
+    }
+    
+    private String downloadUrl(String strUrl) throws IOException{
+        String data = "";
+        InputStream iStream = null;
+        HttpURLConnection urlConnection = null;
+        try{
+            URL url = new URL(strUrl);
+
+            
+            urlConnection = (HttpURLConnection) url.openConnection();
+
+            
+            urlConnection.connect();
+
+            
+            iStream = urlConnection.getInputStream();
+
+            BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
+
+            StringBuffer sb = new StringBuffer();
+
+            String line = "";
+            while( ( line = br.readLine()) != null){
+                sb.append(line);
+            }
+
+            data = sb.toString();
+
+            br.close();
+
+        }catch(Exception e){
+            Log.d("Exception while downloading url", e.toString());
+        }finally{
+            iStream.close();
+            urlConnection.disconnect();
+        }
+        return data;
+    }
+
+    
+    private class DownloadTask extends AsyncTask<String, Void, String>{
+    //非同期で取得
+        
+        @Override
+        protected String doInBackground(String... url) {
+
+            
+            String data = "";
+
+            try{
+                // Fetching the data from web service
+            	
+                data = downloadUrl(url[0]);
+            }catch(Exception e){
+                Log.d("Background Task",e.toString());
+            }
+            return data;
+        }
+
+        
+        // doInBackground()
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+    
+            ParserTask parserTask = new ParserTask();
+           
+            parserTask.execute(result);
+        }
+    }
+
+    /*parse the Google Places in JSON format */
+    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String,String>>> >{
+
+        
+        @Override
+        protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
+
+            JSONObject jObject;
+            List<List<HashMap<String, String>>> routes = null;
+
+            try{
+                jObject = new JSONObject(jsonData[0]);
+                ParseJsonpOfDirectionAPI parser = new ParseJsonpOfDirectionAPI();
+
+                
+                routes = parser.parse(jObject);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+            return routes;
+        }
+
+        //ルート検索で得た座標を使って経路表示
+        @Override
+        protected void onPostExecute(List<List<HashMap<String, String>>> result) {
+            
+            
+            ArrayList<LatLng> points = null;
+            PolylineOptions lineOptions = null;
+            MarkerOptions markerOptions = new MarkerOptions();
+            
+            if(result.size() != 0){
+                
+                for(int i=0;i<result.size();i++){
+                    points = new ArrayList<LatLng>();
+                    lineOptions = new PolylineOptions();
+    
+                    
+                    List<HashMap<String, String>> path = result.get(i);
+    
+                    
+                    for(int j=0;j<path.size();j++){
+                        HashMap<String,String> point = path.get(j);
+    
+                        double lat = Double.parseDouble(point.get("lat"));
+                        double lng = Double.parseDouble(point.get("lng"));
+                        LatLng position = new LatLng(lat, lng);
+    
+                        points.add(position);
+                    }
+    
+                    //ポリライン
+                    lineOptions.addAll(points);
+                    lineOptions.width(10);
+                    lineOptions.color(0x550000ff);
+                    
+                }
+            
+                //描画
+                mMap.addPolyline(lineOptions);
+            }else{
+                mMap.clear();
+                Toast.makeText(MainActivity.this, "ルート情報を取得できませんでした", Toast.LENGTH_LONG).show();
+            }
+            progressDialog.hide();
+            
+        }
+    }
+    
+    /*end of for routemap*/
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// TODO 自動生成されたメソッド・スタブ
 		menu.add(0,R.id.action_settings,0,R.string.action_settings);
 		menu.add(0,R.id.action_settings2,0,R.string.action_settings2);
+		menu.add(0,R.id.action_settings3,0,R.string.action_settings3);
+		menu.add(0,R.id.action_settings4,0,R.string.action_settings4);
 		return super.onCreateOptionsMenu(menu);
 	}
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		boolean ret = false;
 		// TODO 自動生成されたメソッド・スタブ
 		switch(item.getItemId()){
 		case R.id.action_settings:
 			Log.d("Menu", "item1 selected");
 			f_select_map_kind = true;
+			ret = true;
 			break;
 		case R.id.action_settings2 :
 			Log.d("Menu", "item2 selected");
 			f_select_map_kind = false;
+			ret = true;
 			break;
+		case R.id.action_settings3 :
+			Log.d("Menu", "item3 selected");
+			markerPoints.add(new LatLng(36.061897,136.222714));
+			markerPoints.add(new LatLng(36.074311,136.217229));
+			Log.d("Menu", "item3 selected");
+			routeSearch();
+			ret = true;
+			break;
+		case R.id.action_settings4 :
+			startActivity(new Intent(this,SubActivity.class));
+			break;
+			default : ret = false;
+						break;
 		}
+
+		// インジケータを表示
+		
 		
 		// ピン情報を削除
 		mMap.clear();
 		// ピンの再配置
 		setUpMap();
 		
-		return super.onOptionsItemSelected(item);
+		//pd.dismiss();
+		return ret;
 	}
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);// レイアウトを読み込む
+		pd = new ProgressDialog(this);
+		// インジケータのメッセージ
+		pd.setMessage("Loading...");
+		// インジケータのタイプ
+		pd.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 		setUpMapIfNeeded();
 
 		// camera位置の定義(福井県に設定)
 		CameraPosition cameraPos = new CameraPosition.Builder()
 				.target(new LatLng(36.065219, 136.221642)).zoom(15.0f)
 				.bearing(0).build();
+		
+		/*for route search*/
+		markerPoints= new ArrayList<LatLng>();
+		 progressDialog = new ProgressDialog(this);
+	        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+	        progressDialog.setMessage("検索中だす......");
+	        progressDialog.hide();
 
 		// カメラ移動のアニメーション
 		mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
@@ -152,10 +394,11 @@ public class MainActivity extends FragmentActivity {
 
 	private void setUpMapIfNeeded() {
 		if (mMap == null) {
-			FragmentManager manager = (FragmentManager) getSupportFragmentManager();
-			SupportMapFragment frag = (SupportMapFragment) manager
-					.findFragmentById(R.id.map);
-			mMap = frag.getMap();
+		//	FragmentManager manager = (FragmentManager) getSupportFragmentManager();
+		//	SupportMapFragment frag = (SupportMapFragment) manager
+		//			.findFragmentById(R.id.map);
+		//	mMap = frag.getMap();
+			mMap =((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
 			if (mMap != null) {
 				setUpMap();
 			}
@@ -195,7 +438,6 @@ public class MainActivity extends FragmentActivity {
 		mMarker = mMap.addMarker(options);
 		 */
 		
-		
 		/*ファイルからマーカの情報を読みだして設定*/
 		BufferedReader br = null;	// inputstreamから読みだしに使うバッファ
 		InputStream is = null;		// ファイル読み出し用のストリーム
@@ -212,13 +454,25 @@ public class MainActivity extends FragmentActivity {
 				br = new BufferedReader(new InputStreamReader(is));
 				String str;
 				while ((str = br.readLine()) != null) {
-					sb.append(str + "\n");
 					// 取り出した行ごとに処理
-					String[] data = str.split(" |　",4);
+					sb.append(str + "\n");
+					
+					String[] data = str.split("\t",0);
+					//String tmp;
+					//tmp = "";
+					// 半角スペースで区切ったものを再連結
+					//for(int i = 0;i < data.length; i++)
+					//	tmp = tmp.concat(data[i]);
+					
+					// 全角で分割
+					//data = tmp.split("　",7);
+					
+					
+					// dataは全角及び半角で分割されたトークンの配列になっている
 					if(f_select_map_kind){
 						options.title(data[1]);
 						options.position(new LatLng(Float.valueOf(data[5]),Float.valueOf(data[6])));
-						options.snippet(data[2]+data[4]);
+						options.snippet(data[2]);
 					}else{
 						options.title(data[1]);
 						options.position(new LatLng(Float.valueOf(data[4]),Float.valueOf(data[5])));
@@ -242,8 +496,8 @@ public class MainActivity extends FragmentActivity {
 		label.setText(sb.toString());
 		
 		// マーカの表示をカスタマイズ
-		//mMap.setInfoWindowAdapter(new CustomInfoAdapter());
-
+		mMap.setInfoWindowAdapter(new CustomInfoAdapter());
+		
 	}
 
 	private class CustomInfoAdapter implements InfoWindowAdapter {
@@ -290,6 +544,8 @@ public class MainActivity extends FragmentActivity {
 			title.setText(marker.getTitle());
 			snippet.setText(marker.getSnippet());
 		}
+		
+		
 
 	}
 }

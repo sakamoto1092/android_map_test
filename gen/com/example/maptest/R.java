@@ -1051,6 +1051,11 @@ containing a value of this type.
          */
         public static final int abc_search_view_text_min_width=0x7f0a000c;
         /**  Default screen margins, per the Android Design guidelines. 
+
+         Example customization of dimensions originally defined in res/values/dimens.xml
+         (such as screen margins) for screens with more than 820dp of available width. This
+         would include 7" and 10" devices in landscape (~960dp and ~1280dp respectively).
+    
          */
         public static final int activity_horizontal_margin=0x7f0a0011;
         public static final int activity_vertical_margin=0x7f0a0012;
@@ -1188,14 +1193,17 @@ containing a value of this type.
         public static final int action_menu_divider=0x7f060019;
         public static final int action_menu_presenter=0x7f06001a;
         public static final int action_mode_close_button=0x7f060027;
-        public static final int action_settings=0x7f060044;
-        public static final int action_settings2=0x7f060045;
+        public static final int action_settings=0x7f060045;
+        public static final int action_settings2=0x7f060046;
+        public static final int action_settings3=0x7f060047;
+        public static final int action_settings4=0x7f060048;
         public static final int activity_chooser_view_content=0x7f060028;
         public static final int always=0x7f06000f;
-        public static final int badge=0x7f060042;
+        public static final int badge=0x7f060043;
         public static final int beginning=0x7f060014;
         public static final int checkbox=0x7f060030;
         public static final int collapseActionView=0x7f060011;
+        public static final int container=0x7f060042;
         public static final int default_activity_button=0x7f06002b;
         public static final int dialog=0x7f060012;
         public static final int disableHome=0x7f06000c;
@@ -1235,7 +1243,7 @@ containing a value of this type.
         public static final int showCustom=0x7f06000b;
         public static final int showHome=0x7f060008;
         public static final int showTitle=0x7f06000a;
-        public static final int snippet=0x7f060043;
+        public static final int snippet=0x7f060044;
         public static final int split_action_bar=0x7f060021;
         public static final int submit_area=0x7f06003c;
         public static final int tabMode=0x7f060006;
@@ -1298,12 +1306,15 @@ containing a value of this type.
         public static final int abc_search_dropdown_item_icons_2line=0x7f030015;
         public static final int abc_search_view=0x7f030016;
         public static final int activity_main=0x7f030017;
-        public static final int custom_info_window=0x7f030018;
-        public static final int splash=0x7f030019;
-        public static final int support_simple_spinner_dropdown_item=0x7f03001a;
+        public static final int activity_sub=0x7f030018;
+        public static final int custom_info_window=0x7f030019;
+        public static final int fragment_sub=0x7f03001a;
+        public static final int splash=0x7f03001b;
+        public static final int support_simple_spinner_dropdown_item=0x7f03001c;
     }
     public static final class menu {
         public static final int main=0x7f0c0000;
+        public static final int sub=0x7f0c0001;
     }
     public static final class string {
         /**  Content description for the action bar "home" affordance. [CHAR LIMIT=NONE] 
@@ -1348,6 +1359,8 @@ containing a value of this type.
         public static final int abc_shareactionprovider_share_with_application=0x7f070026;
         public static final int action_settings=0x7f07002a;
         public static final int action_settings2=0x7f07002b;
+        public static final int action_settings3=0x7f07002c;
+        public static final int action_settings4=0x7f07002d;
         public static final int app_name=0x7f070028;
         /**   Title for notification shown when GooglePlayServices needs to be
         enabled for a application to work. [CHAR LIMIT=70] 
@@ -1447,6 +1460,7 @@ containing a value of this type.
         /**  Location client code resources (prefix with location_client) 
          */
         public static final int location_client_powered_by_google=0x7f07001a;
+        public static final int title_activity_sub=0x7f07002e;
     }
     public static final class style {
         /** 
