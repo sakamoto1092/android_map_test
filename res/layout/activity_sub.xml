@@ -4,4 +4,165 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.example.maptest.SubActivity"
-    tools:ignore="MergeRootFrame" />
+    tools:ignore="MergeRootFrame" >
+
+    <LinearLayout
+        android:id="@+id/h1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
+
+        <TableLayout
+            android:id="@+id/TableLayout1"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="0.5"
+            android:collapseColumns="3"
+            android:orientation="horizontal"
+            android:stretchColumns="0,1,2" >
+
+            <TableRow
+                android:id="@+id/tableRow1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+
+                <ImageButton
+                    android:id="@+id/ImageButton10"
+                    android:layout_width="103dp"
+                    android:layout_height="98dp"
+                    android:background="@null"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/center" />
+
+                <ImageButton
+                    android:id="@+id/ImageButton03"
+                    android:layout_width="103dp"
+                    android:layout_height="98dp"
+                    android:background="@null"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/center" />
+
+                <ImageButton
+                    android:id="@+id/ImageButton01"
+                    android:layout_width="103dp"
+                    android:layout_height="98dp"
+                    android:background="@null"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/center" />
+
+            </TableRow>
+
+            <TableRow
+                android:id="@+id/tableRow2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <ImageButton
+                    android:id="@+id/ImageButton11"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:background="@null"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/center" />
+
+                <ImageButton
+                    android:id="@+id/ImageButton02"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:background="@null"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/center" />
+
+                <ImageButton
+                    android:id="@+id/imageButton1"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:background="@null"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/center" />
+
+            </TableRow>
+
+        </TableLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="0.5"
+            android:orientation="vertical" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" >
+
+                <ImageButton
+                    android:id="@+id/ImageButton06"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1.00"
+                    android:background="@null"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/center" />
+
+                <ImageButton
+                    android:id="@+id/ImageButton05"
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/center" />
+
+                <ImageButton
+                    android:id="@+id/ImageButton04"
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/center" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" >
+
+                <ImageButton
+                    android:id="@+id/ImageButton09"
+                    android:layout_width="0dp"
+                    android:layout_height="98dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/center" />
+
+                <ImageButton
+                    android:id="@+id/ImageButton08"
+                    android:layout_width="0dp"
+                    android:layout_height="98dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/center" />
+
+                <ImageButton
+                    android:id="@+id/ImageButton07"
+                    android:layout_width="0dp"
+                    android:layout_height="98dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/center" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</FrameLayout>

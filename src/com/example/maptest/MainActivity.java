@@ -38,6 +38,7 @@ import com.google.android.gms.internal.gm;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
+import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
@@ -50,7 +51,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 public class MainActivity extends ActionBarActivity implements OnClickListener {
 	/** GoogleMap インスタンス. */
 	private GoogleMap mMap;
-
+	private MapFragment fmap;
 	/** マーカー. */
 	private Marker mMarker;
 	Boolean f_select_map_kind = false;
@@ -218,7 +219,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 
 						points.add(position);
 					}
-
+					
 					// ポリライン
 					lineOptions.addAll(points);
 					lineOptions.width(10);
@@ -247,6 +248,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 		menu.add(0, R.id.action_settings2, 0, R.string.action_settings2);
 		menu.add(0, R.id.action_settings3, 0, R.string.action_settings3);
 		menu.add(0, R.id.action_settings4, 0, R.string.action_settings4);
+		menu.add(0, R.id.action_settings5, 0, R.string.action_settings5);
 		return super.onCreateOptionsMenu(menu);
 	}
 
@@ -281,6 +283,10 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 			break;
 		case R.id.action_settings4:
 			startActivity(new Intent(this, SubActivity.class));
+			break;
+			
+		case R.id.action_settings5:
+			startActivity(new Intent(this, PageActivity.class));
 			break;
 		default:
 			ret = false;
@@ -351,6 +357,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 				.target(new LatLng(36.065219, 136.221642)).zoom(15.0f)
 				.bearing(0).build();
 
+
 		/* for route search */
 		markerPoints = new ArrayList<LatLng>();
 		progressDialog = new ProgressDialog(this);
@@ -360,7 +367,8 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 		setUpMapIfNeeded();
 
 		// カメラ移動のアニメーション
-		mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
+		if(mMap!=null)
+			mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
 
 		// マーカーを貼る緯度・経度
 		// LatLng location = new LatLng(35.697261, 139.774728);
@@ -447,16 +455,30 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 
 	private void setUpMapIfNeeded() {
 		if (mMap == null) {
+			Log.d("map fragment test", "1.1");
+			
+			// findfragmentbyidメソッドがnullの可能性がある場合は
+			// 以下のように分離した形で書いたほう安全．
+			// 一文にまとめて書くと，fragmentのインスタンスがnullの時，getMapメソッドで
+			// ヌルポで落ちる．
+			
 			// FragmentManager manager = (FragmentManager)
 			// getSupportFragmentManager();
 			// SupportMapFragment frag = (SupportMapFragment) manager
 			// .findFragmentById(R.id.map);
 			// mMap = frag.getMap();
+
+			// google mapのインスタンスを取得するのに，getfragmentmanagerを使う方法と
+			// getsupportfragmentmanagerを使う２種類がある．
+			// layoutのxml内で，MapfragmentとsupportMapfragmentのどちらを利用しているかを確認すること．
+			// getsupportxxは，honeycomb以前のOSにも対応できる仕組みで，現在はそれを使っている．
+			
 			mMap = ((SupportMapFragment) getSupportFragmentManager()
 					.findFragmentById(R.id.map)).getMap();
 			if (mMap != null) {
 				setUpMap2();
 			}
+
 		}
 	}
 
@@ -638,7 +660,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 		protected void onPostExecute(ArrayList<MarkerOptions> result) {
 			// text view のレイアウトを読み込み
 
-			if(result.size()!=0)
+			if(result.size()!=0 && mMap!=null)
 			for(int i =0;i < result.size();i++){
 				mMap.addMarker(result.get(i));
 			}
@@ -703,6 +725,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 
 	}
 
+	/*for button in navigation drawer*/
 	@Override
 	public void onClick(View v) {
 		// TODO 自動生成されたメソッド・スタブ
