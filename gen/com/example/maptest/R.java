@@ -1208,11 +1208,11 @@ containing a value of this type.
         public static final int action_menu_divider=0x7f060019;
         public static final int action_menu_presenter=0x7f06001a;
         public static final int action_mode_close_button=0x7f060027;
-        public static final int action_settings=0x7f06005f;
-        public static final int action_settings2=0x7f060060;
-        public static final int action_settings3=0x7f060061;
-        public static final int action_settings4=0x7f060062;
-        public static final int action_settings5=0x7f060063;
+        public static final int action_settings=0x7f06005c;
+        public static final int action_settings2=0x7f06005d;
+        public static final int action_settings3=0x7f06005e;
+        public static final int action_settings4=0x7f06005f;
+        public static final int action_settings5=0x7f060060;
         public static final int activity_chooser_view_content=0x7f060028;
         public static final int always=0x7f06000f;
         public static final int badge=0x7f060059;
@@ -1231,7 +1231,6 @@ containing a value of this type.
         public static final int end=0x7f060016;
         public static final int expand_activities_button=0x7f060029;
         public static final int expanded_menu=0x7f06002f;
-        public static final int fragment1=0x7f06005e;
         public static final int h1=0x7f060049;
         public static final int home=0x7f060017;
         public static final int homeAsUp=0x7f060009;
@@ -1241,7 +1240,6 @@ containing a value of this type.
         public static final int image=0x7f06002a;
         public static final int imageButton1=0x7f060052;
         public static final int left_drawer=0x7f060043;
-        public static final int list1=0x7f06005d;
         public static final int listMode=0x7f060005;
         public static final int listView1=0x7f06005b;
         public static final int list_item=0x7f06002c;
@@ -1277,7 +1275,6 @@ containing a value of this type.
         public static final int tableRow1=0x7f06004b;
         public static final int tableRow2=0x7f06004f;
         public static final int terrain=0x7f060003;
-        public static final int text=0x7f06005c;
         public static final int title=0x7f06002e;
         public static final int top_action_bar=0x7f060023;
         public static final int txt=0x7f060041;
@@ -1341,13 +1338,9 @@ containing a value of this type.
         public static final int custom_info_window=0x7f03001a;
         public static final int fragment_listfragment=0x7f03001b;
         public static final int fragment_page=0x7f03001c;
-        public static final int fragment_pager_list=0x7f03001d;
-        public static final int fragment_sub=0x7f03001e;
-        public static final int listview=0x7f03001f;
-        public static final int pp=0x7f030020;
-        public static final int splash=0x7f030021;
-        public static final int support_simple_spinner_dropdown_item=0x7f030022;
-        public static final int tt=0x7f030023;
+        public static final int fragment_sub=0x7f03001d;
+        public static final int splash=0x7f03001e;
+        public static final int support_simple_spinner_dropdown_item=0x7f03001f;
     }
     public static final class menu {
         public static final int main=0x7f0c0000;

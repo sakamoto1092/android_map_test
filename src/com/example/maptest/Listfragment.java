@@ -3,7 +3,6 @@ package com.example.maptest;
 import java.util.ArrayList;
 
 import android.app.Activity;
-import android.app.FragmentManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -11,7 +10,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebView.FindListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -72,7 +70,12 @@ public class Listfragment extends Fragment {
 			mParam1 = getArguments().getString(ARG_PARAM1);
 			mParam2 = getArguments().getString(ARG_PARAM2);
 		}
-
+		list = new ArrayList<String>();
+		for (int i = 0; i < 20; i++) {
+			list.add("hoge" + i);
+		}
+		list.add(mParam1);
+		list.add(mParam2);
 	}
 
 	@Override
@@ -83,12 +86,7 @@ public class Listfragment extends Fragment {
 		View view = inflater.inflate(R.layout.fragment_listfragment, container,
 				false);
 
-		list = new ArrayList<String>();
-		for (int i = 0; i < 20; i++) {
-			list.add("hoge" + i);
-		}
-		list.add(mParam1);
-		list.add(mParam2);
+		
 		lv = (ListView) view.findViewById(R.id.listView1);
 		if(lv == null)
 			Log.d("list fragment", "list view is null on createview");

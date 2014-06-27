@@ -12,14 +12,14 @@ import java.util.List;
 
 import org.json.JSONObject;
 
-import android.R.integer;
+
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
@@ -32,18 +32,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Button;
 
-import com.example.maptest.R.string;
-import com.google.android.gms.internal.bg;
-import com.google.android.gms.internal.gm;
+
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.LatLngBoundsCreator;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -51,7 +51,6 @@ import com.google.android.gms.maps.model.PolylineOptions;
 public class MainActivity extends ActionBarActivity implements OnClickListener {
 	/** GoogleMap インスタンス. */
 	private GoogleMap mMap;
-	private MapFragment fmap;
 	/** マーカー. */
 	private Marker mMarker;
 	Boolean f_select_map_kind = false;
@@ -229,7 +228,32 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 				}
 
 				// 描画
+				mMap.clear();
+				MarkerOptions m = new MarkerOptions();
+				m.title("A");
+				m.position(markerPoints.get(0));
+				mMap.addMarker(m);
+				m.title("B");
+				m.position(markerPoints.get(1));
+				mMap.addMarker(m);
 				mMap.addPolyline(lineOptions);
+				
+				// 指定したマーカー全体が入るboundを生成
+				LatLngBounds.Builder bc = new LatLngBounds.Builder();
+				bc.include(markerPoints.get(0));
+				bc.include(markerPoints.get(1));
+				
+				// 指定した座標中心のカメラポジションの生成
+				CameraPosition tmp_cameraPos = new CameraPosition.Builder()
+				.target(new LatLng(((markerPoints.get(0).latitude+markerPoints.get(1).latitude))/2,
+						(markerPoints.get(0).longitude+markerPoints.get(1).longitude)/2)).zoom(30.0f)
+				.bearing(0).build();
+				
+				// boundを使ってカメラ移動(paddingで引いたりズームしたり．大きい値ほど引いた状態になる)
+				mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bc.build(),70));
+				
+				// カメラポジションを使ってカメラ移動
+				//mMap.animateCamera(CameraUpdateFactory.newCameraPosition(tmp_cameraPos));
 			} else {
 				mMap.clear();
 				Toast.makeText(MainActivity.this, "ルート情報を取得できませんでした",
@@ -256,17 +280,20 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		boolean ret = false;
-		Bg_setUpMap bg_map = new Bg_setUpMap();
-
+		
 		// TODO 自動生成されたメソッド・スタブ
 		switch (item.getItemId()) {
-		case R.id.action_settings:
+		
+		 // text1.txtのピン情報をマップに設定
+		case R.id.action_settings: 
 			Log.d("Menu", "item1 selected");
 			f_select_map_kind = true;
 			ret = true;
 			mMap.clear();// ピン情報を削除
 			setUpMap2();
 			break;
+			
+		// text2.txtのピン情報をマップに表示
 		case R.id.action_settings2:
 			Log.d("Menu", "item2 selected");
 			f_select_map_kind = false;
@@ -274,25 +301,35 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 			mMap.clear();// ピン情報を削除
 			setUpMap2();
 			break;
+			
+		// 2地点を指定してルート検索(要インターネットアクセス)
 		case R.id.action_settings3:
 			Log.d("Menu", "item3 selected");
 			markerPoints.clear();
-			markerPoints.add(new LatLng(36.061897, 136.222714));
+			Location my_pos = mMap.getMyLocation();
+			markerPoints.add(new LatLng(my_pos.getLatitude(), my_pos.getLongitude()));
 			markerPoints.add(new LatLng(36.074311, 136.217229));
 			routeSearch();
 			ret = true;
 			break;
+			
+		// ウィジェットを格子状に配置するアクティビティ
 		case R.id.action_settings4:
 			startActivity(new Intent(this, SubActivity.class));
 			break;
 			
+		// view pagerを使ったアクティビティ(fragmentとしてlistviewを使用)
 		case R.id.action_settings5:
 			startActivity(new Intent(this, PageActivity.class));
 			break;
+			
+		// その他
 		default:
 			ret = false;
 			break;
 		}
+		
+		// navigation drawerのボタンが押されたかを判断
 		if (mDrawerToggle.onOptionsItemSelected(item)) {
 			Log.d("item navigation drawable", "test");
 			return true;
@@ -363,14 +400,17 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 		markerPoints = new ArrayList<LatLng>();
 		progressDialog = new ProgressDialog(this);
 		progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-		progressDialog.setMessage("検索中だす......");
+		progressDialog.setMessage("処理中......");
 		progressDialog.hide();
 		setUpMapIfNeeded();
 
-		// カメラ移動のアニメーション
-		if(mMap!=null)
+		
+		// カメラ移動のアニメーション等
+		if(mMap!=null){
+			mMap.setMyLocationEnabled(true);
 			mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
-
+			
+		}
 		// マーカーを貼る緯度・経度
 		// LatLng location = new LatLng(35.697261, 139.774728);
 
@@ -674,6 +714,27 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 		}
 	}
 	
+	/*for button in navigation drawer*/
+	@Override
+	public void onClick(View v) {
+		// TODO 自動生成されたメソッド・スタブ
+		switch (v.getId()) {
+		case R.id.drawer_button:
+			f_select_map_kind = true;
+			mMap.clear();
+			setUpMap2();
+			mDrawer.closeDrawers();
+			break;
+		case R.id.drawer_button2:
+			f_select_map_kind = false;
+			mMap.clear();
+			mDrawer.closeDrawers();
+			setUpMap2();
+			break;
+		default:
+			break;
+		}
+	}
 
 	private class CustomInfoAdapter implements InfoWindowAdapter {
 
@@ -726,25 +787,6 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 
 	}
 
-	/*for button in navigation drawer*/
-	@Override
-	public void onClick(View v) {
-		// TODO 自動生成されたメソッド・スタブ
-		switch (v.getId()) {
-		case R.id.drawer_button:
-			f_select_map_kind = true;
-			mMap.clear();
-			setUpMap2();
-			mDrawer.closeDrawers();
-			break;
-		case R.id.drawer_button2:
-			f_select_map_kind = false;
-			mMap.clear();
-			mDrawer.closeDrawers();
-			setUpMap2();
-			break;
-		default:
-			break;
-		}
-	}
+	
+	
 }
