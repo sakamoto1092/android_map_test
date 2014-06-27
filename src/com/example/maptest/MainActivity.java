@@ -202,7 +202,8 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 			PolylineOptions lineOptions = null;
 			// MarkerOptions markerOptions = new MarkerOptions();
 
-			if (result.size() != 0) {
+			
+			if (result != null &&result.size() != 0) {
 
 				for (int i = 0; i < result.size(); i++) {
 					points = new ArrayList<LatLng>();
