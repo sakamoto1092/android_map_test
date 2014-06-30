@@ -12,7 +12,7 @@ import java.util.List;
 
 import org.json.JSONObject;
 
-
+import android.R.integer;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -31,7 +31,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Button;
-
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -71,6 +70,13 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 	// for drawer
 	private ActionBarDrawerToggle mDrawerToggle;
 	private DrawerLayout mDrawer;
+	private ArrayList<MarkerOptions> m_markers; // map上のピン
+
+	// for location
+	private Location my_local;
+	private Location defalt_local = new Location("fukui");
+	private float rad = Float.MAX_VALUE;
+	private Marker nearest_marker;
 
 	/* for routeSearch */
 	private void routeSearch() {
@@ -201,8 +207,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 			PolylineOptions lineOptions = null;
 			// MarkerOptions markerOptions = new MarkerOptions();
 
-			
-			if (result != null &&result.size() != 0) {
+			if (result != null && result.size() != 0) {
 
 				for (int i = 0; i < result.size(); i++) {
 					points = new ArrayList<LatLng>();
@@ -219,7 +224,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 
 						points.add(position);
 					}
-					
+
 					// ポリライン
 					lineOptions.addAll(points);
 					lineOptions.width(10);
@@ -237,23 +242,27 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 				m.position(markerPoints.get(1));
 				mMap.addMarker(m);
 				mMap.addPolyline(lineOptions);
-				
+
 				// 指定したマーカー全体が入るboundを生成
 				LatLngBounds.Builder bc = new LatLngBounds.Builder();
 				bc.include(markerPoints.get(0));
 				bc.include(markerPoints.get(1));
-				
+
 				// 指定した座標中心のカメラポジションの生成
 				CameraPosition tmp_cameraPos = new CameraPosition.Builder()
-				.target(new LatLng(((markerPoints.get(0).latitude+markerPoints.get(1).latitude))/2,
-						(markerPoints.get(0).longitude+markerPoints.get(1).longitude)/2)).zoom(30.0f)
-				.bearing(0).build();
-				
+						.target(new LatLng(
+								((markerPoints.get(0).latitude + markerPoints
+										.get(1).latitude)) / 2,
+								(markerPoints.get(0).longitude + markerPoints
+										.get(1).longitude) / 2)).zoom(30.0f)
+						.bearing(0).build();
+
 				// boundを使ってカメラ移動(paddingで引いたりズームしたり．大きい値ほど引いた状態になる)
-				mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bc.build(),70));
-				
+				mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(
+						bc.build(), 70));
+
 				// カメラポジションを使ってカメラ移動
-				//mMap.animateCamera(CameraUpdateFactory.newCameraPosition(tmp_cameraPos));
+				// mMap.animateCamera(CameraUpdateFactory.newCameraPosition(tmp_cameraPos));
 			} else {
 				mMap.clear();
 				Toast.makeText(MainActivity.this, "ルート情報を取得できませんでした",
@@ -280,55 +289,58 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		boolean ret = false;
-		
+		my_local = mMap.getMyLocation();
 		// TODO 自動生成されたメソッド・スタブ
 		switch (item.getItemId()) {
-		
-		 // text1.txtのピン情報をマップに設定
-		case R.id.action_settings: 
+
+		// text1.txtのピン情報をマップに設定
+		case R.id.action_settings:
 			Log.d("Menu", "item1 selected");
 			f_select_map_kind = true;
 			ret = true;
 			mMap.clear();// ピン情報を削除
+			rad = Float.MAX_VALUE;
 			setUpMap2();
 			break;
-			
+
 		// text2.txtのピン情報をマップに表示
 		case R.id.action_settings2:
 			Log.d("Menu", "item2 selected");
 			f_select_map_kind = false;
 			ret = true;
 			mMap.clear();// ピン情報を削除
+			rad = Float.MAX_VALUE;
 			setUpMap2();
 			break;
-			
+
 		// 2地点を指定してルート検索(要インターネットアクセス)
 		case R.id.action_settings3:
 			Log.d("Menu", "item3 selected");
 			markerPoints.clear();
 			Location my_pos = mMap.getMyLocation();
-			markerPoints.add(new LatLng(my_pos.getLatitude(), my_pos.getLongitude()));
+			markerPoints.add(new LatLng(my_pos.getLatitude(), my_pos
+					.getLongitude()));
 			markerPoints.add(new LatLng(36.074311, 136.217229));
 			routeSearch();
 			ret = true;
 			break;
-			
+
 		// ウィジェットを格子状に配置するアクティビティ
 		case R.id.action_settings4:
 			startActivity(new Intent(this, SubActivity.class));
 			break;
-			
+
 		// view pagerを使ったアクティビティ(fragmentとしてlistviewを使用)
 		case R.id.action_settings5:
 			startActivity(new Intent(this, PageActivity.class));
 			break;
-			
+
 		// その他
 		default:
 			ret = false;
 			break;
 		}
-		
+
 		// navigation drawerのボタンが押されたかを判断
 		if (mDrawerToggle.onOptionsItemSelected(item)) {
 			Log.d("item navigation drawable", "test");
@@ -345,6 +357,8 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 		/* for navigation drawer */
 		((Button) findViewById(R.id.drawer_button)).setOnClickListener(this);
 		((Button) findViewById(R.id.drawer_button2)).setOnClickListener(this);
+		((Button) findViewById(R.id.drawer_button3)).setOnClickListener(this);
+		((Button) findViewById(R.id.drawer_button4)).setOnClickListener(this);
 		mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 		mDrawerToggle = new ActionBarDrawerToggle(this, mDrawer,
 				R.drawable.ic_drawer, R.string.hello_world,
@@ -395,7 +409,6 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 				.target(new LatLng(36.065219, 136.221642)).zoom(15.0f)
 				.bearing(0).build();
 
-
 		/* for route search */
 		markerPoints = new ArrayList<LatLng>();
 		progressDialog = new ProgressDialog(this);
@@ -404,12 +417,11 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 		progressDialog.hide();
 		setUpMapIfNeeded();
 
-		
 		// カメラ移動のアニメーション等
-		if(mMap!=null){
+		if (mMap != null) {
 			mMap.setMyLocationEnabled(true);
 			mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
-			
+
 		}
 		// マーカーを貼る緯度・経度
 		// LatLng location = new LatLng(35.697261, 139.774728);
@@ -494,15 +506,55 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 		Log.d("MainActivity", "onResume");
 	}
 
+	/* for button in navigation drawer */
+	@Override
+	public void onClick(View v) {
+		// TODO 自動生成されたメソッド・スタブ
+		my_local = mMap.getMyLocation();
+		switch (v.getId()) {
+		case R.id.drawer_button:
+			f_select_map_kind = true;
+			mMap.clear();
+			rad = Float.MAX_VALUE;
+			setUpMap2();
+			mDrawer.closeDrawers();
+			break;
+		case R.id.drawer_button2:
+			f_select_map_kind = false;
+			mMap.clear();
+			mDrawer.closeDrawers();
+			rad = Float.MAX_VALUE;
+			setUpMap2();
+			break;
+		case R.id.drawer_button3:
+			f_select_map_kind = true;
+			mMap.clear();
+			mDrawer.closeDrawers();
+			rad = 2000.0f;
+			setUpMap2();
+			break;
+		case R.id.drawer_button4:
+			f_select_map_kind = true;
+			mMap.clear();
+			mDrawer.closeDrawers();
+			rad = 1000.0f;
+			setUpMap2();
+			break;
+
+		default:
+			break;
+		}
+	}
+
 	private void setUpMapIfNeeded() {
 		if (mMap == null) {
 			Log.d("map fragment test", "1.1");
-			
+
 			// findfragmentbyidメソッドがnullの可能性がある場合は
 			// 以下のように分離した形で書いたほう安全．
 			// 一文にまとめて書くと，fragmentのインスタンスがnullの時，getMapメソッドで
 			// ヌルポで落ちる．
-			
+
 			// FragmentManager manager = (FragmentManager)
 			// getSupportFragmentManager();
 			// SupportMapFragment frag = (SupportMapFragment) manager
@@ -513,7 +565,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 			// getsupportfragmentmanagerを使う２種類がある．
 			// layoutのxml内で，MapfragmentとsupportMapfragmentのどちらを利用しているかを確認すること．
 			// getsupportxxは，honeycomb以前のOSにも対応できる仕組みで，現在はそれを使っている．
-			
+
 			mMap = ((SupportMapFragment) getSupportFragmentManager()
 					.findFragmentById(R.id.map)).getMap();
 			if (mMap != null) {
@@ -524,9 +576,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 	}
 
 	/**
-	 * Map をセットアップする.
-	 * (現時点では，非同期で設定するBg_setUpMapを使用しているため
-	 * このメソッドは使っていない
+	 * Map をセットアップする. (現時点では，非同期で設定するBg_setUpMapを使用しているため このメソッドは使っていない
 	 */
 	private void setUpMap() {
 		progressDialog.show();
@@ -617,6 +667,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 		// mMap.setInfoWindowAdapter(new CustomInfoAdapter());
 
 	}
+
 	private void setUpMap2() {
 		progressDialog.show();
 		Bg_setUpMap bg_map = new Bg_setUpMap();
@@ -629,25 +680,25 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 	 * 
 	 * f_select_map_kindに応じて
 	 * 
-	 * 1:test1.txt
-	 * 2:test2.txt
+	 * 1:test1.txt 2:test2.txt
 	 * 
-	 * からマーカの情報を取得しマーカーオプションリストを生成し，
-	 * 最後にマップにマーカを配置する．テキストからマーカーを取得する
+	 * からマーカの情報を取得しマーカーオプションリストを生成し， 最後にマップにマーカを配置する．テキストからマーカーを取得する
 	 * 際はバックグラウンド，最後のマーカーの配置は最後に実行される．
-	 * 
-	 * 
-	 * 
-	 * */
-	
-	private class Bg_setUpMap extends AsyncTask<Void, Void, ArrayList<MarkerOptions>> {
+	 */
+
+	private class Bg_setUpMap extends
+			AsyncTask<Void, Void, ArrayList<MarkerOptions>> {
 
 		String m_str;
+		float min_dist = Float.MAX_VALUE;
+		MarkerOptions m_near;
+
+
 		@Override
 		protected ArrayList<MarkerOptions> doInBackground(Void... params) {
 			MarkerOptions m_options = null;
 
-			ArrayList<MarkerOptions> markerlist = new ArrayList<MarkerOptions>();
+			m_markers = new ArrayList<MarkerOptions>();
 			/* ファイルからマーカの情報を読みだして設定 */
 			BufferedReader br = null; // inputstreamから読みだしに使うバッファ
 			InputStream is = null; // ファイル読み出し用のストリーム
@@ -655,6 +706,20 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 			// BitmapDescriptor icon = BitmapDescriptorFactory
 			// .fromResource(R.drawable.ic_logo); // アイコン画像の宣言
 			// options.icon(icon); // アイコン画像をマーカに設定
+			// Location m_local;
+			float lat, lng;
+			double my_lat, my_lng;
+
+			// GPSから値を取得できなかったら福井県庁の座標を使う
+			if (my_local != null) {
+				my_lat = my_local.getLatitude();
+				my_lng = my_local.getLongitude();
+			} else {
+				my_lat = 36.065219;
+				my_lng = 136.221642;
+			}
+			Log.d("set up map on Main Activity", Double.toString(my_lat)
+					+ Double.toString(my_lng));
 			try {
 				try {
 					if (f_select_map_kind)
@@ -668,21 +733,42 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 						// 取り出した行ごとに処理
 						sb.append(str + "\n");
 						String[] data = str.split("\t", 0);
-
+						float[] dist = new float[3];
 						if (f_select_map_kind) {
-							m_options.title(data[1]);
-							m_options.position(new LatLng(Float
-									.valueOf(data[5]), Float.valueOf(data[6])));
-							m_options.snippet(data[2]);
+
+							lat = Float.valueOf(data[5]);
+							lng = Float.valueOf(data[6]);
+							Location.distanceBetween(lat, lng, my_lat, my_lng,
+									dist);
+							if (dist[0] < rad) {
+								m_options.title(data[1]);
+								m_options.position(new LatLng(lat, lng));
+								m_options.snippet(data[2]);
+								m_markers.add(m_options);
+								if (dist[0] < min_dist) {
+									min_dist = dist[0];
+									m_near = m_options;
+								}
+							}
 
 						} else {
-							m_options.title(data[1]);
-							m_options.position(new LatLng(Float
-									.valueOf(data[4]), Float.valueOf(data[5])));
-							m_options.snippet(data[2]);
-
+							lat = Float.valueOf(data[4]);
+							lng = Float.valueOf(data[5]);
+							Location.distanceBetween(lat, lng, my_lat, my_lng,
+									dist);
+							if (dist[0] < rad) {
+								m_options.title(data[1]);
+								m_options.position(new LatLng(Float
+										.valueOf(data[4]), Float
+										.valueOf(data[5])));
+								m_options.snippet(data[2]);
+								m_markers.add(m_options);
+								if (dist[0] < min_dist) {
+									min_dist = dist[0];
+									m_near = m_options;
+								}
+							}
 						}
-						markerlist.add(m_options);
 					}
 				} finally {
 					if (br != null)
@@ -692,8 +778,8 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 			}
 			m_str = new String();
 			m_str = sb.toString();
-			
-			return markerlist;
+
+			return m_markers;
 			// TODO 自動生成されたメソッド・スタブ
 		}
 
@@ -701,38 +787,29 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 		protected void onPostExecute(ArrayList<MarkerOptions> result) {
 			// text view のレイアウトを読み込み
 
-			if(result.size()!=0 && mMap!=null)
-			for(int i =0;i < result.size();i++){
-				mMap.addMarker(result.get(i));
-			}
+			if (result.size() != 0 && mMap != null)
+				for (int i = 0; i < result.size(); i++) {
+					MarkerOptions tmp = result.get(i);
+					if (tmp.equals(m_near))
+						nearest_marker = mMap.addMarker(tmp);
+					else
+						mMap.addMarker(tmp);
+				}
+
+			Toast.makeText(MainActivity.this,
+					Integer.toString(result.size()) + "個のマーカを設置",
+					Toast.LENGTH_LONG).show();
+			Toast.makeText(
+					MainActivity.this,
+					"最寄りのマーカ：" + nearest_marker.getTitle() + " "
+							+ nearest_marker.getPosition().toString(),
+					Toast.LENGTH_LONG).show();
 			// text view のレイアウトを読み込み
 			TextView label = (TextView) findViewById(R.id.txt);
 			// viewにテキストを設定
 			label.setText(m_str);
-			
+
 			progressDialog.hide();
-		}
-	}
-	
-	/*for button in navigation drawer*/
-	@Override
-	public void onClick(View v) {
-		// TODO 自動生成されたメソッド・スタブ
-		switch (v.getId()) {
-		case R.id.drawer_button:
-			f_select_map_kind = true;
-			mMap.clear();
-			setUpMap2();
-			mDrawer.closeDrawers();
-			break;
-		case R.id.drawer_button2:
-			f_select_map_kind = false;
-			mMap.clear();
-			mDrawer.closeDrawers();
-			setUpMap2();
-			break;
-		default:
-			break;
 		}
 	}
 
@@ -787,6 +864,4 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 
 	}
 
-	
-	
 }
