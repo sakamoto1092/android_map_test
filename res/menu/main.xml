@@ -28,5 +28,10 @@
         android:orderInCategory="100"
         android:title="@string/action_settings5">
     </item>
+     <item
+        android:id="@+id/action_settings6"
+        android:orderInCategory="100"
+        android:title="@string/action_settings6">
+    </item>
 
 </menu>

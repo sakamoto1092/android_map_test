@@ -283,6 +283,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 		menu.add(0, R.id.action_settings3, 0, R.string.action_settings3);
 		menu.add(0, R.id.action_settings4, 0, R.string.action_settings4);
 		menu.add(0, R.id.action_settings5, 0, R.string.action_settings5);
+		menu.add(0, R.id.action_settings6, 0, R.string.action_settings6);
 		return super.onCreateOptionsMenu(menu);
 	}
 
@@ -333,6 +334,11 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 		// view pagerを使ったアクティビティ(fragmentとしてlistviewを使用)
 		case R.id.action_settings5:
 			startActivity(new Intent(this, PageActivity.class));
+			break;
+			
+		// view pagerを使ったアクティビティ(fragmentとしてlistviewを使用)
+		case R.id.action_settings6:
+			startActivity(new Intent(this, Tab_activity.class));
 			break;
 
 		// その他
@@ -692,7 +698,6 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 		String m_str;
 		float min_dist = Float.MAX_VALUE;
 		MarkerOptions m_near;
-
 
 		@Override
 		protected ArrayList<MarkerOptions> doInBackground(Void... params) {

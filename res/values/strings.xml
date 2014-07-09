@@ -8,8 +8,15 @@
     <string name="action_settings3">show route</string>
     <string name="action_settings4">sub activity</string>
     <string name="action_settings5">page activity</string>
+    <string name="action_settings6">tab page activity</string>
     <string name="title_activity_sub">SubActivity</string>
     <string name="title_activity_page">PageActivity</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_tab_activity">Tab_activity</string>
+    <string name="title_section1">Section 1</string>
+    <string name="title_section2">Section 2</string>
+    <string name="title_section3">Section 3</string>
+    <string name="title_section4">Section 4</string>
+    <string name="title_section5">Section 5</string>
 
 </resources>

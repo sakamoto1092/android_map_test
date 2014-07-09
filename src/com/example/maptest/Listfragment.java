@@ -21,7 +21,7 @@ import android.widget.ListView;
  * to create an instance of this fragment.
  * 
  */
-public class Listfragment extends Fragment {
+public  class Listfragment extends Fragment {
 	// TODO: Rename parameter arguments, choose names that match
 	// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 	private static final String ARG_PARAM1 = "param1";
@@ -33,7 +33,7 @@ public class Listfragment extends Fragment {
 
 	private OnFragmentInteractionListener mListener;
 	ListView lv;
-	 ArrayList<String> list;
+	ArrayList<String> list;
 	 ArrayAdapter<String>adapter;
 	/**
 	 * Use this factory method to create a new instance of this fragment using
@@ -46,7 +46,7 @@ public class Listfragment extends Fragment {
 	 * @return A new instance of fragment Listfragment.
 	 */
 	// TODO: Rename and change types and number of parameters
-	public static Listfragment newInstance(String param1, String param2) {
+	public Listfragment newInstance(String param1, String param2) {
 		Log.d("list fragment", "new instance");
 		Listfragment fragment = new Listfragment();
 		Bundle args = new Bundle();
@@ -93,6 +93,7 @@ public class Listfragment extends Fragment {
 		adapter = new ArrayAdapter<String>(getActivity(),
 				android.R.layout.simple_list_item_1, list);
 		lv.setAdapter(adapter);
+		
 		return view;
 	}
 	
