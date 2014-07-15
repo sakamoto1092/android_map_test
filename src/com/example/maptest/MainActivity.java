@@ -1,6 +1,8 @@
 package com.example.maptest;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -13,7 +15,10 @@ import java.util.List;
 import org.json.JSONObject;
 
 import android.R.integer;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.location.Location;
@@ -23,10 +28,12 @@ import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -335,7 +342,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 		case R.id.action_settings5:
 			startActivity(new Intent(this, PageActivity.class));
 			break;
-			
+
 		// view pagerを使ったアクティビティ(fragmentとしてlistviewを使用)
 		case R.id.action_settings6:
 			startActivity(new Intent(this, Tab_activity.class));
@@ -795,7 +802,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 			if (result.size() != 0 && mMap != null)
 				for (int i = 0; i < result.size(); i++) {
 					MarkerOptions tmp = result.get(i);
-					if (tmp.equals(m_near))
+					if (tmp == m_near)
 						nearest_marker = mMap.addMarker(tmp);
 					else
 						mMap.addMarker(tmp);
@@ -808,11 +815,123 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 					MainActivity.this,
 					"最寄りのマーカ：" + nearest_marker.getTitle() + " "
 							+ nearest_marker.getPosition().toString(),
-					Toast.LENGTH_LONG).show();
+					Toast.LENGTH_SHORT).show();
 			// text view のレイアウトを読み込み
 			TextView label = (TextView) findViewById(R.id.txt);
 			// viewにテキストを設定
 			label.setText(m_str);
+			mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+				@Override
+				public void onMapLongClick(final LatLng latLng) {
+					Toast.makeText(MainActivity.this, "Long clicked",
+							Toast.LENGTH_SHORT).show();
+					AlertDialog.Builder builder = new AlertDialog.Builder(
+							MainActivity.this);
+					builder.setTitle("選択式のダイアログ");
+
+					// 表示アイテムを指定する //
+					String[] items = { "マーカーを設置", "item 1", "item 2", "item 3" };
+					builder.setItems(items,
+							new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog,
+										int which) {
+									Toast.makeText(MainActivity.this,
+											"Item " + which + " clicked.",
+											Toast.LENGTH_SHORT).show();
+									if (which == 0) {
+										LayoutInflater inflater = MainActivity.this
+												.getLayoutInflater();
+										View v = inflater.inflate(
+												R.layout.dialog2, null);
+										final EditText editText1 = (EditText) v
+												.findViewById(R.id.dialogText2);
+										final EditText editText2 = (EditText) v
+												.findViewById(R.id.dialogText3);
+
+										new AlertDialog.Builder(MainActivity.this)
+												.setTitle("Hello, AlertDialog!")
+												.setIcon(R.drawable.ic_drawer)
+												.setView(v)
+												.setPositiveButton(
+														"add marker",
+														new DialogInterface.OnClickListener() {
+															@Override
+															public void onClick(
+																	DialogInterface dialog,
+																	int which) {
+
+																// mapへジャンプ
+																Log.d("dialog on listview ",
+																		"clicked add marker");
+																MarkerOptions m = new MarkerOptions();
+
+																m.title(editText1.getText().toString());
+																m.position(latLng);
+																m.snippet(editText2.getText().toString());
+																mMap.addMarker(m);
+															}
+														})
+												.setNegativeButton(
+														"Cancel",
+														new DialogInterface.OnClickListener() {
+															@Override
+															public void onClick(
+																	DialogInterface dialog,
+																	int which) {
+																// TODO
+																// 自動生成されたメソッド・スタブ
+																Log.d("dialog on listview ",
+																		"clicked Cancel");
+															}
+														}).show();
+										
+									}
+								}
+							});
+
+					AlertDialog dialog = builder.create();
+					dialog.show();
+				}
+			});
+			mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+				@Override
+				public void onInfoWindowClick(Marker marker) {
+					AlertDialog.Builder builder = new AlertDialog.Builder(
+							MainActivity.this);
+					builder.setTitle("選択式のダイアログ");
+
+					// 表示アイテムを指定する //
+					String[] items = { "お気に入り登録", "現在地からここへのルート検索", "item 2", "item 3" };
+					builder.setItems(items,
+							new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog,
+										int which) {
+									Toast.makeText(MainActivity.this,
+											"Item " + which + " clicked.",
+											Toast.LENGTH_SHORT).show();
+									if (which == 0) {
+										try {
+											FileOutputStream fileOutputStream = openFileOutput(
+													"myfile.txt", MODE_PRIVATE);
+											String writeString = "test";
+											fileOutputStream.write(writeString
+													.getBytes());
+											Log.d("file write", getFilesDir()
+													.toString());
+										} catch (FileNotFoundException e) {
+										} catch (IOException e) {
+										}
+
+									}
+								}
+							});
+
+					AlertDialog dialog = builder.create();
+					dialog.show();
+				}
+			});
 
 			progressDialog.hide();
 		}

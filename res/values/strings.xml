@@ -18,5 +18,8 @@
     <string name="title_section3">Section 3</string>
     <string name="title_section4">Section 4</string>
     <string name="title_section5">Section 5</string>
+    <string name="hint1">name</string>
+    <string name="hint2">住所</string>
+    <string name="hint3">タグ</string>
 
 </resources>

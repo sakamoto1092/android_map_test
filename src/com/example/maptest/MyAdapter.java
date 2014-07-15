@@ -3,7 +3,12 @@ package com.example.maptest;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.util.Log;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 public  class MyAdapter extends FragmentPagerAdapter {
+    String s;
 	public MyAdapter(android.support.v4.app.FragmentManager fm) {
 		super(fm);
 		Log.d("MyAdapter", "constracter");
@@ -17,9 +22,11 @@ public  class MyAdapter extends FragmentPagerAdapter {
 	@Override
 	public android.support.v4.app.Fragment getItem(int position) {
 		Log.d("MyAdapter", "get item");
+
+
 		switch (position) {
 		case 0:
-			return new Listfragment().newInstance("0", "0");
+			return new Listfragment().newInstance(s, s);
 		case 1:
 			return new Listfragment().newInstance("1", "1");
 		case 2:
@@ -43,4 +50,9 @@ public  class MyAdapter extends FragmentPagerAdapter {
 		}
 		
 	}
+
+    public void setInitstr(String[] strings){
+        s = strings[0];
+    }
+
 }

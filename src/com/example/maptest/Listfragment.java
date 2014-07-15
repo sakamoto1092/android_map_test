@@ -3,15 +3,24 @@ package com.example.maptest;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 /**
  * A simple {@link android.support.v4.app.Fragment} subclass. Activities that
@@ -21,7 +30,7 @@ import android.widget.ListView;
  * to create an instance of this fragment.
  * 
  */
-public  class Listfragment extends Fragment {
+public class Listfragment extends Fragment {
 	// TODO: Rename parameter arguments, choose names that match
 	// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 	private static final String ARG_PARAM1 = "param1";
@@ -34,7 +43,8 @@ public  class Listfragment extends Fragment {
 	private OnFragmentInteractionListener mListener;
 	ListView lv;
 	ArrayList<String> list;
-	 ArrayAdapter<String>adapter;
+	ArrayAdapter<String> adapter;
+
 	/**
 	 * Use this factory method to create a new instance of this fragment using
 	 * the provided parameters.
@@ -53,13 +63,13 @@ public  class Listfragment extends Fragment {
 		args.putString(ARG_PARAM1, param1);
 		args.putString(ARG_PARAM2, param2);
 		fragment.setArguments(args);
-		
+
 		return fragment;
 	}
 
 	public Listfragment() {
 		// Required empty public constructor
-		
+
 	}
 
 	@Override
@@ -86,17 +96,102 @@ public  class Listfragment extends Fragment {
 		View view = inflater.inflate(R.layout.fragment_listfragment, container,
 				false);
 
-		
 		lv = (ListView) view.findViewById(R.id.listView1);
-		if(lv == null)
+		if (lv == null)
 			Log.d("list fragment", "list view is null on createview");
 		adapter = new ArrayAdapter<String>(getActivity(),
 				android.R.layout.simple_list_item_1, list);
 		lv.setAdapter(adapter);
-		
+		lv.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				// TODO 自動生成されたメソッド・スタブ
+				LayoutInflater inflater = getActivity().getLayoutInflater();
+				View v = inflater.inflate(R.layout.dialog1, null);
+				final EditText editText1 = (EditText) v
+						.findViewById(R.id.dialogText1);
+				final EditText editText2 = (EditText) v
+						.findViewById(R.id.dialogText2);
+				final EditText editText3 = (EditText) v
+						.findViewById(R.id.dialogText6);
+
+				new AlertDialog.Builder(getActivity())
+						.setTitle("Hello, AlertDialog!")
+						.setIcon(R.drawable.ic_drawer)
+						.setView(v)
+						.setPositiveButton("show map",
+								new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog,
+											int which) {
+
+										// TODO mapへジャンプする機能の実装
+										Log.d("dialog on listview ",
+												"clicked show map");
+									}
+								})
+						.setNegativeButton("Close",
+								new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog,
+											int which) {
+
+										Log.d("dialog on listview ",
+												"clicked Close");
+									}
+								})
+						.setNeutralButton("適応",
+								new DialogInterface.OnClickListener() {
+
+									@Override
+									public void onClick(DialogInterface dialog,
+											int which) {
+										// TODO ここで入力されたものをお気に入りに反映させる
+									}
+								}).show();
+
+			}
+		});
+		lv.setOnItemLongClickListener(new OnItemLongClickListener() {
+
+			@Override
+			public boolean onItemLongClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				// TODO お気に入りを削除するかしないかのダイアログを出す
+				AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+						getActivity());
+				alertDialogBuilder.setTitle("お気に入りの削除");
+				alertDialogBuilder.setMessage("このお気に入りを削除しますか？");
+				alertDialogBuilder.setPositiveButton("はい",
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+								// TODO お気に入りの削除をする
+							}
+						});
+				alertDialogBuilder.setNegativeButton("いいえ",
+						new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog,
+									int which) {
+							}
+						});
+				
+				alertDialogBuilder.setCancelable(false);
+				AlertDialog alertDialog = alertDialogBuilder.create();
+				alertDialog.show();
+
+				return false;
+			}
+
+		});
+
 		return view;
 	}
-	
+
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		// TODO 自動生成されたメソッド・スタブ
@@ -139,10 +234,8 @@ public  class Listfragment extends Fragment {
 	public interface OnFragmentInteractionListener {
 		// TODO: Update argument type and name
 		public void onFragmentInteraction(Uri uri);
-		
-	}
-		
 
+	}
 
 	public void change_listitem() {
 		Log.d("list fragment", "add item");
