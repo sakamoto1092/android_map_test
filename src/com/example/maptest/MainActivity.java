@@ -2,7 +2,7 @@ package com.example.maptest;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -11,16 +11,17 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 import org.json.JSONObject;
 
-import android.R.integer;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -39,7 +40,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.Button;
 
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.GoogleMap.InfoWindowAdapter;
@@ -49,7 +49,6 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.LatLngBoundsCreator;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -84,6 +83,9 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 	private Location defalt_local = new Location("fukui");
 	private float rad = Float.MAX_VALUE;
 	private Marker nearest_marker;
+	
+	// from favorite
+	Favorite mfav;
 
 	/* for routeSearch */
 	private void routeSearch() {
@@ -291,6 +293,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 		menu.add(0, R.id.action_settings4, 0, R.string.action_settings4);
 		menu.add(0, R.id.action_settings5, 0, R.string.action_settings5);
 		menu.add(0, R.id.action_settings6, 0, R.string.action_settings6);
+		menu.add(0, R.id.action_settings7, 0, R.string.action_settings7);
 		return super.onCreateOptionsMenu(menu);
 	}
 
@@ -348,6 +351,11 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 			startActivity(new Intent(this, Tab_activity.class));
 			break;
 
+		// view pagerを使ったアクティビティ(fragmentとしてlistviewを使用)
+		case R.id.action_settings7:
+			deleteFile("favorite1.txt");
+			break;
+
 		// その他
 		default:
 			ret = false;
@@ -366,7 +374,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);// レイアウトを読み込む
-
+		mfav = getIntent().getParcelableExtra("fav");
 		/* for navigation drawer */
 		((Button) findViewById(R.id.drawer_button)).setOnClickListener(this);
 		((Button) findViewById(R.id.drawer_button2)).setOnClickListener(this);
@@ -433,7 +441,15 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 		// カメラ移動のアニメーション等
 		if (mMap != null) {
 			mMap.setMyLocationEnabled(true);
-			mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
+			if(mfav != null){
+				CameraPosition fav_cameraPos = new CameraPosition.Builder()
+				.target(mfav.latlng).zoom(15.0f)
+				.bearing(0).build();
+				mMap.animateCamera(CameraUpdateFactory.newCameraPosition(fav_cameraPos));
+			}else{
+				mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPos));
+			}
+			
 
 		}
 		// マーカーを貼る緯度・経度
@@ -807,6 +823,14 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 					else
 						mMap.addMarker(tmp);
 				}
+			if(mfav != null){
+				MarkerOptions tmp = new MarkerOptions();
+				tmp.title(mfav.title);
+				tmp.snippet(mfav.addres);
+				tmp.position(mfav.latlng);
+				tmp.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
+				mMap.addMarker(tmp);
+			}
 
 			Toast.makeText(MainActivity.this,
 					Integer.toString(result.size()) + "個のマーカを設置",
@@ -849,7 +873,41 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 										final EditText editText2 = (EditText) v
 												.findViewById(R.id.dialogText3);
 
-										new AlertDialog.Builder(MainActivity.this)
+										// 変換実行
+										Geocoder coder = new Geocoder(
+												MainActivity.this, Locale.JAPAN);
+										List<Address> list_address;
+										String addr;
+										try {
+											list_address = coder
+													.getFromLocation(
+															latLng.latitude,
+															latLng.longitude, 1);
+
+											if (!list_address.isEmpty()) {
+
+												// 変換成功時は，最初の変換候補を取得
+												Address address = list_address
+														.get(0);
+												StringBuffer sb = new StringBuffer();
+
+												// adressの大区分から小区分までを改行で全結合
+												String s;
+												for (int i = 0; (s = address
+														.getAddressLine(i)) != null; i++) {
+													sb.append(s + "\n");
+												}
+
+												addr = sb.toString();
+												editText2.setText(addr);
+											}
+										} catch (IOException e) {
+											// TODO 自動生成された catch ブロック
+											e.printStackTrace();
+										}
+
+										new AlertDialog.Builder(
+												MainActivity.this)
 												.setTitle("Hello, AlertDialog!")
 												.setIcon(R.drawable.ic_drawer)
 												.setView(v)
@@ -861,14 +919,17 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 																	DialogInterface dialog,
 																	int which) {
 
-																// mapへジャンプ
 																Log.d("dialog on listview ",
 																		"clicked add marker");
 																MarkerOptions m = new MarkerOptions();
 
-																m.title(editText1.getText().toString());
+																m.title(editText1
+																		.getText()
+																		.toString());
 																m.position(latLng);
-																m.snippet(editText2.getText().toString());
+																m.snippet(editText2
+																		.getText()
+																		.toString());
 																mMap.addMarker(m);
 															}
 														})
@@ -885,7 +946,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 																		"clicked Cancel");
 															}
 														}).show();
-										
+
 									}
 								}
 							});
@@ -896,13 +957,14 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 			});
 			mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
 				@Override
-				public void onInfoWindowClick(Marker marker) {
+				public void onInfoWindowClick(final Marker marker) {
 					AlertDialog.Builder builder = new AlertDialog.Builder(
 							MainActivity.this);
-					builder.setTitle("選択式のダイアログ");
+					builder.setTitle("選択");
 
 					// 表示アイテムを指定する //
-					String[] items = { "お気に入り登録", "現在地からここへのルート検索", "item 2", "item 3" };
+					String[] items = { "お気に入り登録", "現在地からここへのルート検索", "item 2",
+							"item 3" };
 					builder.setItems(items,
 							new DialogInterface.OnClickListener() {
 								@Override
@@ -912,19 +974,141 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 											"Item " + which + " clicked.",
 											Toast.LENGTH_SHORT).show();
 									if (which == 0) {
-										try {
-											FileOutputStream fileOutputStream = openFileOutput(
-													"myfile.txt", MODE_PRIVATE);
-											String writeString = "test";
-											fileOutputStream.write(writeString
-													.getBytes());
-											Log.d("file write", getFilesDir()
-													.toString());
-										} catch (FileNotFoundException e) {
-										} catch (IOException e) {
-										}
+										// "お気に入り登録処理"
+										LayoutInflater inflater = getLayoutInflater();
+										View v = inflater.inflate(
+												R.layout.dialog1, null);
+										final EditText editText1 = (EditText) v
+												.findViewById(R.id.dialogText1);
+										final EditText editText2 = (EditText) v
+												.findViewById(R.id.dialogText2);
+										final EditText editText3 = (EditText) v
+												.findViewById(R.id.dialogText6);
+										editText1.setText(marker.getTitle());
 
+										// 変換実行
+										Geocoder coder = new Geocoder(
+												MainActivity.this, Locale.JAPAN);
+										List<Address> list_address;
+										String addr;
+										try {
+											list_address = coder.getFromLocation(
+													marker.getPosition().latitude,
+													marker.getPosition().longitude,
+													1);
+
+											if (!list_address.isEmpty()) {
+
+												// 変換成功時は，最初の変換候補を取得
+												Address address = list_address
+														.get(0);
+												StringBuffer sb = new StringBuffer();
+
+												// adressの大区分から小区分までを改行で全結合
+												String s;
+												for (int i = 0; (s = address
+														.getAddressLine(i)) != null; i++) {
+													sb.append(s + "　");
+												}
+
+												addr = sb.toString();
+												editText2.setText(addr);
+											}
+
+										} catch (IOException e1) {
+											// TODO 自動生成された catch ブロック
+											e1.printStackTrace();
+										}
+										new AlertDialog.Builder(
+												MainActivity.this)
+												.setTitle("お気に入り登録")
+												.setIcon(R.drawable.ic_drawer)
+												.setView(v)
+												.setPositiveButton(
+														"登録",
+														new DialogInterface.OnClickListener() {
+															@Override
+															public void onClick(
+																	DialogInterface dialog,
+																	int which) {
+																// if (which ==
+																// 0) {
+																try {
+																	// FileOutputStream
+																	// fileOutputStream
+																	// =
+																	// openFileOutput(
+																	// "myfile.txt",
+																	// MODE_PRIVATE);
+																	// String
+																	// writeString
+																	// =
+																	// "test";
+																	// fileOutputStream.write(writeString
+																	// .getBytes());
+																	String path = "/data/data/"
+																			+ getPackageName()
+																			+ "/files/favorite1.txt";
+																	FileWriter fw = new FileWriter(
+																			path,
+																			true); // 追記
+																	String str;
+																	str = editText1
+																			.getText()
+																			.toString()
+																			+ "\t"
+																			+ editText2
+																					.getText()
+																					.toString()
+																			+ "\t"
+																			+ Double.toString(marker
+																					.getPosition().latitude)
+																			+ "\t"
+																			+ Double.toString(marker
+																					.getPosition().longitude)
+																			+ "\t"
+																			+ editText3
+																					.getText()
+																					.toString()
+																			+ "\n";
+
+																	fw.write(str);
+																	fw.close();
+
+																	Log.d("file write",
+																			str);
+																} catch (FileNotFoundException e) {
+																} catch (IOException e) {
+																}
+
+															}
+														})
+												.setNegativeButton(
+														"Close",
+														new DialogInterface.OnClickListener() {
+															@Override
+															public void onClick(
+																	DialogInterface dialog,
+																	int which) {
+
+																Log.d("dialog on map ",
+																		"clicked Close");
+															}
+														}).show();
 									}
+									if (which == 1) {
+										// ルート検索処理
+										markerPoints.clear();
+										Location my_pos = mMap.getMyLocation();
+										markerPoints.add(new LatLng(my_pos
+												.getLatitude(), my_pos
+												.getLongitude()));
+										markerPoints.add(new LatLng(marker
+												.getPosition().latitude, marker
+												.getPosition().longitude));
+										routeSearch();
+									}
+
 								}
 							});
 

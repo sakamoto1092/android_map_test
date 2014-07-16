@@ -9,6 +9,7 @@
     <string name="action_settings4">sub activity</string>
     <string name="action_settings5">page activity</string>
     <string name="action_settings6">tab page activity</string>
+    <string name="action_settings7">clear favoritelist file</string>
     <string name="title_activity_sub">SubActivity</string>
     <string name="title_activity_page">PageActivity</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>

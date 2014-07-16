@@ -1,11 +1,17 @@
 package com.example.maptest;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,6 +28,8 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.google.android.gms.maps.model.LatLng;
+
 /**
  * A simple {@link android.support.v4.app.Fragment} subclass. Activities that
  * contain this fragment must implement the
@@ -37,7 +45,7 @@ public class Listfragment extends Fragment {
 	private static final String ARG_PARAM2 = "param2";
 
 	// TODO: Rename and change types of parameters
-	private String mParam1;
+	private ArrayList<Favorite> mParam1;
 	private String mParam2;
 
 	private OnFragmentInteractionListener mListener;
@@ -49,19 +57,19 @@ public class Listfragment extends Fragment {
 	 * Use this factory method to create a new instance of this fragment using
 	 * the provided parameters.
 	 * 
-	 * @param param1
+	 * @param fl
 	 *            Parameter 1.
-	 * @param param2
-	 *            Parameter 2.
+	 * 
 	 * @return A new instance of fragment Listfragment.
 	 */
 	// TODO: Rename and change types and number of parameters
-	public Listfragment newInstance(String param1, String param2) {
+	public Listfragment newInstance(FavoriteList fl) {
 		Log.d("list fragment", "new instance");
 		Listfragment fragment = new Listfragment();
 		Bundle args = new Bundle();
-		args.putString(ARG_PARAM1, param1);
-		args.putString(ARG_PARAM2, param2);
+		args.putParcelableArrayList(ARG_PARAM1, fl.favlist);
+		// args.putSerializable(ARG_PARAM1, fl.favlist);
+		// args.putString(ARG_PARAM2, param2);
 		fragment.setArguments(args);
 
 		return fragment;
@@ -77,15 +85,15 @@ public class Listfragment extends Fragment {
 		super.onCreate(savedInstanceState);
 		Log.d("list fragment", "on create");
 		if (getArguments() != null) {
-			mParam1 = getArguments().getString(ARG_PARAM1);
-			mParam2 = getArguments().getString(ARG_PARAM2);
+			mParam1 = getArguments().getParcelableArrayList(ARG_PARAM1);
+			// mParam2 = getArguments().getString(ARG_PARAM2);
 		}
 		list = new ArrayList<String>();
-		for (int i = 0; i < 20; i++) {
-			list.add("hoge" + i);
+		for (int i = 0; i < mParam1.size(); i++) {
+			list.add(mParam1.get(i).title);
 		}
-		list.add(mParam1);
-		list.add(mParam2);
+		;
+		// list.add(mParam2);
 	}
 
 	@Override
@@ -106,7 +114,7 @@ public class Listfragment extends Fragment {
 
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
-					int position, long id) {
+					final int position, long id) {
 				// TODO 自動生成されたメソッド・スタブ
 				LayoutInflater inflater = getActivity().getLayoutInflater();
 				View v = inflater.inflate(R.layout.dialog1, null);
@@ -116,41 +124,95 @@ public class Listfragment extends Fragment {
 						.findViewById(R.id.dialogText2);
 				final EditText editText3 = (EditText) v
 						.findViewById(R.id.dialogText6);
-
+                editText1.setText(mParam1.get(position).title);
+                editText2.setText(mParam1.get(position).addres);
+                editText3.setText(mParam1.get(position).tag);
 				new AlertDialog.Builder(getActivity())
 						.setTitle("Hello, AlertDialog!")
 						.setIcon(R.drawable.ic_drawer)
 						.setView(v)
 						.setPositiveButton("show map",
-								new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog,
-											int which) {
-
-										// TODO mapへジャンプする機能の実装
-										Log.d("dialog on listview ",
-												"clicked show map");
-									}
-								})
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog,
+                                                        int which) {
+                                        // TODO mapへジャンプする機能の実装
+                                        Log.d("dialog on listview ",
+                                                "clicked show map");
+                                        Intent i = new Intent(getActivity(), MainActivity.class);
+                                              i.putExtra("fav",mParam1.get(position) );
+                                        	startActivity(i);
+                                    }
+                                }
+                        )
 						.setNegativeButton("Close",
-								new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog,
-											int which) {
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog,
+                                                        int which) {
 
-										Log.d("dialog on listview ",
-												"clicked Close");
-									}
-								})
+                                        Log.d("dialog on listview ",
+                                                "clicked Close");
+                                    }
+                                }
+                        )
 						.setNeutralButton("適応",
-								new DialogInterface.OnClickListener() {
+                                new DialogInterface.OnClickListener() {
 
-									@Override
-									public void onClick(DialogInterface dialog,
-											int which) {
-										// TODO ここで入力されたものをお気に入りに反映させる
-									}
-								}).show();
+                                    @Override
+                                    public void onClick(DialogInterface dialog,
+                                                        int which) {
+                                        // TODO ここで入力されたものをお気に入りに反映させる
+                                        String path = "/data/data/" + getActivity().getPackageName() + "/files/favorite1.txt";
+                                        String str;
+                                        StringBuffer sb = new StringBuffer();
+                                        FileWriter fw = null;
+                                        int count = 0;
+                                        BufferedReader br = null;
+                                        Favorite fv = new Favorite();
+
+                                        try {
+                                            br = new BufferedReader(new FileReader(path));
+                                            try {
+                                                while ((str = br.readLine()) != null) {
+                                                    if (position != count++) {
+                                                        sb.append(str);
+
+                                                    } else {
+                                                        String string;
+                                                        String[]  s = str.split("\t");
+                                                        string = editText1.getText() + "\t" + editText2.getText() + "\t" + s[2] + "\t" + s[3]
+                                                                +"\t" + editText3.getText() + "\n";
+                                                        list.set(position,editText1.getText().toString());
+                                                        fv.title = editText1.getText().toString();
+                                                        fv.addres = editText2.getText().toString();
+                                                        fv.latlng = new LatLng(Double.valueOf(s[2]),Double.valueOf(s[3]));
+                                                        fv.tag = editText3.getText().toString();
+
+                                                        sb.append(string);
+                                                    }
+                                                }
+                                            } catch (IOException e) {
+                                                e.printStackTrace();
+                                            }
+                                        } catch (FileNotFoundException e) {
+                                            e.printStackTrace();
+                                        }
+
+                                        // 削除をファイルに反映
+                                        try {
+                                            fw = new FileWriter(path);
+                                            fw.write(sb.toString());
+                                            fw.close();
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                        mParam1.set(position,fv);
+                                        adapter.notifyDataSetChanged();
+
+                                    }
+                                }
+                        ).show();
 
 			}
 		});
@@ -158,7 +220,7 @@ public class Listfragment extends Fragment {
 
 			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View view,
-					int position, long id) {
+					final int position, long id) {
 				// TODO お気に入りを削除するかしないかのダイアログを出す
 				AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
 						getActivity());
@@ -170,7 +232,42 @@ public class Listfragment extends Fragment {
 							public void onClick(DialogInterface dialog,
 									int which) {
 								// TODO お気に入りの削除をする
-							}
+                                String path = "/data/data/" + getActivity().getPackageName() + "/files/favorite1.txt";
+                                String str;
+                                StringBuffer sb = new StringBuffer();
+                                FileWriter fw = null;
+                                int count = 0;
+                                BufferedReader br = null;
+
+                                try {
+                                    br = new BufferedReader(new FileReader(path));
+                                    try {
+                                        while ((str = br.readLine()) != null) {
+                                            if (position != count++) {
+                                                sb.append(str);
+                                            }
+                                        }
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                } catch (FileNotFoundException e) {
+                                    e.printStackTrace();
+                                }
+
+                                // 削除をファイルに反映
+                                try {
+                                    fw = new FileWriter(path);
+                                    fw.write(sb.toString());
+                                    fw.close();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                                mParam1.remove(position);
+                                list.remove(position);
+                                adapter.notifyDataSetChanged();
+
+                            }
+
 						});
 				alertDialogBuilder.setNegativeButton("いいえ",
 						new DialogInterface.OnClickListener() {
@@ -184,7 +281,7 @@ public class Listfragment extends Fragment {
 				AlertDialog alertDialog = alertDialogBuilder.create();
 				alertDialog.show();
 
-				return false;
+				return true;
 			}
 
 		});
