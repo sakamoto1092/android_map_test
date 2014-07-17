@@ -507,7 +507,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 		TextView label = (TextView) this.findViewById(R.id.txt);
 		// viewにテキストを設定
 		label.setText(sb.toString());
-
+		
 	}
 
 	@Override
@@ -568,6 +568,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 			mDrawer.closeDrawers();
 			rad = 1000.0f;
 			setUpMap2();
+			
 			break;
 
 		default:
@@ -575,6 +576,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 		}
 	}
 
+	
 	private void setUpMapIfNeeded() {
 		if (mMap == null) {
 			Log.d("map fragment test", "1.1");
@@ -1052,25 +1054,22 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 																	FileWriter fw = new FileWriter(
 																			path,
 																			true); // 追記
+																	String s1,s2,s3;
+																	s1 = editText1.getText().toString().equals("") ? 
+																			"empty" : editText1.getText().toString();
+																	s2 = editText2.getText().toString().equals("") ? 
+																			"empty" : editText2.getText().toString();
+																	s3 = editText3.getText().toString().equals("") ? 
+																			"empty" : editText3.getText().toString();
+																	
 																	String str;
-																	str = editText1
-																			.getText()
-																			.toString()
-																			+ "\t"
-																			+ editText2
-																					.getText()
-																					.toString()
-																			+ "\t"
+																	str = s1 + "\t" + s2 + "\t"
 																			+ Double.toString(marker
 																					.getPosition().latitude)
 																			+ "\t"
 																			+ Double.toString(marker
 																					.getPosition().longitude)
-																			+ "\t"
-																			+ editText3
-																					.getText()
-																					.toString()
-																			+ "\n";
+																			+ "\t" + s3 + "\n";
 
 																	fw.write(str);
 																	fw.close();

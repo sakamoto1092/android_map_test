@@ -180,10 +180,18 @@ public class Listfragment extends Fragment {
 
                                                     } else {
                                                         String string;
+                                                        String s1,s2,s3;
+                                                        s1 = editText1.getText().toString().equals("") ? 
+                                                        		"empty" : editText1.getText().toString();
+																s2 = editText2.getText().toString().equals("") ? 
+																		"empty" : editText2.getText().toString();
+																s3 = editText3.getText().toString().equals("") ? 
+																		"empty" : editText3.getText().toString();
+																
                                                         String[]  s = str.split("\t");
-                                                        string = editText1.getText() + "\t" + editText2.getText() + "\t" + s[2] + "\t" + s[3]
-                                                                +"\t" + editText3.getText() + "\n";
-                                                        list.set(position,editText1.getText().toString());
+                                                        string = s1 + "\t" + s2 + "\t" + s[2] + "\t" + s[3]
+                                                                +"\t" + s3 + "\n";
+                                                        list.set(position,s1);
                                                         fv.title = editText1.getText().toString();
                                                         fv.addres = editText2.getText().toString();
                                                         fv.latlng = new LatLng(Double.valueOf(s[2]),Double.valueOf(s[3]));

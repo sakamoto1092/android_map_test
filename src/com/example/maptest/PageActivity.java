@@ -41,9 +41,10 @@ public class PageActivity extends FragmentActivity implements
         FavoriteList fl = new FavoriteList();
         FileReader fr;
         String str=null;
-        String path="/data/data/" + this.getPackageName() + "/files/favorite1.txt";
-
-
+        String path;
+        path="/data/data/com.example.maptest/files/favorite1.txt";
+       
+       
         try {
             // by stream
            // FileInputStream fileInputStream;
@@ -57,7 +58,7 @@ public class PageActivity extends FragmentActivity implements
            // mAdapter.setInitstr(s);
 
             // by reader
-            BufferedReader br = new BufferedReader(new FileReader(path));
+        	 BufferedReader br = new BufferedReader(new FileReader(path));
 
            while((str = br.readLine() ) != null){
                String[] s = str.split("\t");
@@ -69,16 +70,17 @@ public class PageActivity extends FragmentActivity implements
                int id = fl.addFavorite(fav);
                Log.d("Page Activity","load Favolist item : "+id);
            }
-
+          
 
         } catch (FileNotFoundException e) {
             //String[] s = new String[3];
             //s[0] = "not found";
             //mAdapter.setInitstr(s);
-            fl.addFavorite(new Favorite());
+            fl.addFavorite(new Favorite());        
         } catch (IOException e) {
-        }
 
+        }
+        Log.d("test", "test");
         // ファイルから読み出したFavoriteListを
         //
         mAdapter.addFavoList(fl);
